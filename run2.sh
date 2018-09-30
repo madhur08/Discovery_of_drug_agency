@@ -1,7 +1,5 @@
 #!/bin/bash
 
-## This is to run the first program main.cpp
-
 if [ -e "./bin/code" ]; then
     ./bin/code $1 2
 else

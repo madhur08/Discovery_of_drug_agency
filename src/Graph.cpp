@@ -41,7 +41,7 @@ void Graph::printClauses(Clause clause, ofstream &fout)
                     fout << "-" << toIndex(i, l) << " -" << z + i + V << " 0\n";
                     fout << toIndex(i, k) << " -" << z + i + V << " 0\n";
                 }
-        for (int i = V * K + 1; i <= V * K * K; i += V, fout << "0\n")
+        for (int i = V * K + 1; i < V * K * K; i += V, fout << "0\n")
             for (int j = 0; j < V; ++j)
                 fout << i + j << " ";
         break;
@@ -58,7 +58,7 @@ Graph::Graph(string file_name, bool make_graph)
     if (fin.is_open())
     {
         fin >> V >> E >> K;
-        number_of_clauses = K * K * (E + 2.5 * V + 1) - K*(0.5 * V + 2 * E + 1);
+        number_of_clauses = K * K * (E + 2 * V + 1) - K * (-0.5 * V * V + 2 * E + 2.5 * V) + V;
         number_of_variables = V * K * K;
         if (make_graph)
         {
@@ -92,29 +92,37 @@ void Graph::convertToSubgraphs(string sat_file, string subgraphs_file)
 {
     ofstream fout(subgraphs_file.c_str(), fstream::out);
     ifstream fin(sat_file.c_str(), fstream::in);
-    string RESULT;
-    fin >> RESULT;
-    if (RESULT == "SAT")
+    if (fin.is_open())
     {
-        int a;
-        vector<vector<int>> subgraphs;
-        subgraphs.resize(K);
-        while (fin >> a && std::abs(a) <= V * K)
+        string RESULT;
+        fin >> RESULT;
+        if (RESULT == "SAT")
         {
-            if (a > 0)
-                subgraphs[(a - 1) / V].push_back((a - 1) % V);
+            int a;
+            vector<vector<int>> subgraphs;
+            subgraphs.resize(K);
+            while (fin >> a && std::abs(a) <= V * K)
+            {
+                if (a > 0)
+                    subgraphs[(a - 1) / V].push_back((a - 1) % V);
+            }
+            for (int i = 0; i < K; ++i)
+            {
+                fout << "#" << (i + 1) << " " << subgraphs[i].size() << endl;
+                for (size_t v=0;v<subgraphs[i].size();++v){
+                    fout << subgraphs[i][v];
+                    if(v != subgraphs[i].size()-1)
+                        fout<<" ";
+                    else   
+                        fout << endl;
+                }
+            }
         }
-        for (int i = 0; i < K; ++i)
-        {
-            fout << "#" << (i + 1) << " " << subgraphs[i].size() << endl;
-            for (const auto &v : subgraphs[i])
-                fout << (v + 1) << " ";
-            fout << endl;
-        }
+        else
+            fout << 0 << endl;
+        fin.close();
     }
     else
-        fout << 0 << endl;
-
+        cerr << "File does not exit\n";
     fout.close();
-    fin.close();
 }
