@@ -22,7 +22,7 @@ void Graph::printClauses(Clause clause, ofstream &fout)
                     }
                     z += K;
                 }
-        for (int i = V * K * K + 1; i < V * K * K + K * E; i += K, fout << "0\n", num++)
+        for (int i = V * K * K + 1; i < V * K * K + K * E; i += K, fout << "0\n")
             for (int k = 0; k < K; ++k)
                 fout << i + k << " ";
         break;
