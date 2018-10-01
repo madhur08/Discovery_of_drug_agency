@@ -32,8 +32,8 @@ void Graph::printClauses(Clause clause, ofstream &fout)
                         fout << "-" << toIndex(i, k) << " -" << toIndex(j, k) << " 0\n";
         break;
     case SUBGRAPH_NOT_SUBSET:
-        for (int k = 0, z = V * K + 1; k < K; ++k, z += (2 * V))
-            for (int l = k + 1; l < K; ++l)
+        for (int k = 0, z = V * K + 1; k < K; ++k)
+            for (int l = k + 1; l < K; ++l,z += (2 * V))
                 for (int i = 0; i < V; ++i)
                 {
                     fout << "-" << toIndex(i, k) << " -" << z + i << " 0\n";
@@ -102,20 +102,15 @@ void Graph::convertToSubgraphs(string sat_file, string subgraphs_file)
             vector<vector<int>> subgraphs;
             subgraphs.resize(K);
             while (fin >> a && std::abs(a) <= V * K)
-            {
                 if (a > 0)
                     subgraphs[(a - 1) / V].push_back((a - 1) % V);
-            }
             for (int i = 0; i < K; ++i)
             {
                 fout << "#" << (i + 1) << " " << subgraphs[i].size() << endl;
-                for (size_t v=0;v<subgraphs[i].size();++v){
-                    fout << subgraphs[i][v];
-                    if(v != subgraphs[i].size()-1)
-                        fout<<" ";
-                    else   
-                        fout << endl;
-                }
+                fout << (subgraphs[i][0] + 1);
+                for (size_t v = 1; v < subgraphs[i].size(); ++v)
+                    fout << " " << (subgraphs[i][v] + 1);
+                fout << endl;
             }
         }
         else
