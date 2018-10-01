@@ -8,7 +8,6 @@ using namespace std;
 enum Clause
 {
     NO_DIRECT_EDGE,
-    NO_SUBGRAPH_EMPTY,
     SUBGRAPH_FULLY_CONNECTED,
     SUBGRAPH_NOT_SUBSET,
     NO_VERTEX_UNUSED

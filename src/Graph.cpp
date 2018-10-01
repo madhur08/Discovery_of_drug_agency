@@ -11,17 +11,20 @@ void Graph::printClauses(Clause clause, ofstream &fout)
     switch (clause)
     {
     case NO_DIRECT_EDGE:
-        for (int k = 0; k < K; ++k)
-            for (int l = k + 1; l < K; ++l)
-                for (int i = 0; i < V; ++i)
-                    for (int j = 0; j < V; ++j)
-                        if (i != j && adjacencyMatrix[i][j] == 1)
-                            fout << toIndex(j, k) << " " << toIndex(i, l) << " -" << toIndex(i, k) << " -" << toIndex(j, l) << " 0\n";
-        break;
-    case NO_SUBGRAPH_EMPTY:
-        for (int k = 0; k < K; ++k, fout << "0\n")
-            for (int i = 0; i < V; ++i)
-                fout << toIndex(i, k) << " ";
+        for (int i = 0, z = V * K * K + 1; i < V; ++i)
+            for (int j = i + 1; j < V; ++j)
+                if (adjacencyMatrix[i][j] == 1)
+                {
+                    for (int k = 0; k < K; ++k)
+                    {
+                        fout << toIndex(i, k) << " -" << z + k << " 0\n";
+                        fout << toIndex(j, k) << " -" << z + k << " 0\n";
+                    }
+                    z += K;
+                }
+        for (int i = V * K * K + 1; i < V * K * K + K * E; i += K, fout << "0\n", num++)
+            for (int k = 0; k < K; ++k)
+                fout << i + k << " ";
         break;
 
     case SUBGRAPH_FULLY_CONNECTED:
@@ -33,7 +36,7 @@ void Graph::printClauses(Clause clause, ofstream &fout)
         break;
     case SUBGRAPH_NOT_SUBSET:
         for (int k = 0, z = V * K + 1; k < K; ++k)
-            for (int l = k + 1; l < K; ++l,z += (2 * V))
+            for (int l = k + 1; l < K; ++l, z += (2 * V))
                 for (int i = 0; i < V; ++i)
                 {
                     fout << "-" << toIndex(i, k) << " -" << z + i << " 0\n";
@@ -58,8 +61,8 @@ Graph::Graph(string file_name, bool make_graph)
     if (fin.is_open())
     {
         fin >> V >> E >> K;
-        number_of_clauses = K * K * (E + 2 * V + 1) - K * (-0.5 * V * V + 2 * E + 2.5 * V) + V;
-        number_of_variables = V * K * K;
+        number_of_clauses = K * K * (2 * V + 1) + K * (0.5 * V * V - 2.5 * V - 1 + E) + V + E;
+        number_of_variables = V * K * K + K * E;
         if (make_graph)
         {
             adjacencyMatrix.resize(V);
@@ -82,7 +85,6 @@ void Graph::convertToCNF(string file_name)
     ofstream fout(file_name.c_str(), fstream::out);
     fout << "p cnf " << number_of_variables << " " << number_of_clauses << endl;
     printClauses(NO_DIRECT_EDGE, fout);
-    printClauses(NO_SUBGRAPH_EMPTY, fout);
     printClauses(SUBGRAPH_FULLY_CONNECTED, fout);
     printClauses(SUBGRAPH_NOT_SUBSET, fout);
     printClauses(NO_VERTEX_UNUSED, fout);
